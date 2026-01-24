@@ -8,7 +8,7 @@
     "plugin:prettier/recommended"
   ],
   "parserOptions": {
-    "ecmaVersion": "latest",
+    "ecmaVersion": "2021",
     "sourceType": "module"
   },
   "rules": {
@@ -19,6 +19,6 @@
         "argsIgnorePattern": "^_"
       }
     ],
-    "no-console": "warn"
+    "no-console": "off"
   }
 }
