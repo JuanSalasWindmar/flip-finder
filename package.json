@@ -1,0 +1,19 @@
+{
+  "name": "flip-finder",
+  "version": "0.0.1",
+  "description": "The application that finds you the best property for flipping",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JuanCamiloSalas/flip-finder.git"
+  },
+  "author": "Juan Salas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JuanCamiloSalas/flip-finder/issues"
+  },
+  "homepage": "https://github.com/JuanCamiloSalas/flip-finder#readme"
+}
