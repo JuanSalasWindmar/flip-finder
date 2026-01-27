@@ -1,10 +1,12 @@
 {
-    "conventionalCommits.scopes": [
-        "ci",
-        "config",
-        "db",
-        "docs",
-        "root",
-        "scripts"
-    ]
+  "conventionalCommits.scopes": ["ci", "config", "db", "docs", "root", "scripts"],
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

@@ -1,7 +1,7 @@
-node_modules/
-dist/
-build/
+# Ignore artifacts:
+build
+coverage
+
+# Environment files
 .env
-.env.local
-.DS_Store
-*.log
+.env.*
