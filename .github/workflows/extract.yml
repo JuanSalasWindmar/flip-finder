@@ -1,0 +1,33 @@
+name: Extract Properties
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * 1-6" # Mon-Sat at 10:00 UTC
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @flip-finder/scripts prisma:generate
+
+      - name: Run extraction
+        run: pnpm --filter @flip-finder/scripts extract
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
