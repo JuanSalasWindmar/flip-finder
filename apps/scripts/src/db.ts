@@ -94,6 +94,35 @@ export async function upsertProperties(
   return upserted
 }
 
+export async function getLastExecution(
+  polygonId: string,
+  type: "EXTRACT" | "ANALYZE",
+): Promise<Date | null> {
+  const rows = await prisma.$queryRaw<{ performed_at: Date }[]>`
+    SELECT performed_at FROM executions
+    WHERE polygon_id = ${polygonId} AND type = ${type}::"PolygonType" AND status = 'SUCCESS'
+    ORDER BY performed_at DESC
+    LIMIT 1
+  `
+  return rows.length > 0 ? rows[0].performed_at : null
+}
+
+export async function createExecution(execution: {
+  polygonId: string
+  type: "EXTRACT" | "ANALYZE"
+  status: "SUCCESS" | "FAILED"
+  propertiesFound: number
+  propertiesNew: number
+  performedAt: Date
+}): Promise<void> {
+  await prisma.$executeRaw`
+    INSERT INTO executions (id, polygon_id, type, status, properties_found, properties_new, performed_at, created_at)
+    VALUES (gen_random_uuid(), ${execution.polygonId}, ${execution.type}::"PolygonType",
+            ${execution.status}::"ExecutionStatus", ${execution.propertiesFound},
+            ${execution.propertiesNew}, ${execution.performedAt}, NOW())
+  `
+}
+
 export async function disconnect(): Promise<void> {
   await prisma.$disconnect()
 }

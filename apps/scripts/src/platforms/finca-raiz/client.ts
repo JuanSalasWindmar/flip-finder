@@ -112,7 +112,15 @@ async function fetchPage(
 async function fetchAllProperties(
   polygon: ExtractPolygon,
   params: ExtractParams,
+  since: Date | null,
 ): Promise<RawProperty[]> {
+  // TODO: add date filter when FR API field name is discovered
+  if (since) {
+    console.log(
+      `  [FincaRaiz] Since filter: ${since.toISOString()} (not yet implemented in API)`,
+    )
+  }
+
   const allProperties: RawProperty[] = []
 
   let page = 1

@@ -138,8 +138,17 @@ async function fetchPage(
 async function fetchAllProperties(
   polygon: ExtractPolygon,
   params: ExtractParams,
+  since: Date | null,
 ): Promise<RawProperty[]> {
   const filter = buildFilter(polygon, params)
+
+  // TODO: add date filter when MC API field name is discovered
+  // e.g. filter.publishedDate = { values: [since.toISOString(), ""] }
+  if (since) {
+    console.log(
+      `  [MetroCuadrado] Since filter: ${since.toISOString()} (not yet implemented in API)`,
+    )
+  }
   const allProperties: RawProperty[] = []
 
   let batch: McBatch = { realEstate: { from: 0 }, seller: { from: 0 } }

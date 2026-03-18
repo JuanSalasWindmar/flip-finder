@@ -53,5 +53,6 @@ export interface PlatformClient {
   fetchProperties(
     polygon: ExtractPolygon,
     params: ExtractParams,
+    since: Date | null,
   ): Promise<RawProperty[]>
 }
