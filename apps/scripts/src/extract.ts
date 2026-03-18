@@ -106,6 +106,7 @@ async function main() {
       extracted_at: performedAt,
     }))
 
+    console.log(`  Upserting ${withTimestamp.length} properties into DB...`)
     const upserted =
       withTimestamp.length > 0 ? await upsertProperties(withTimestamp) : 0
     totalUpserted += upserted
@@ -123,6 +124,7 @@ async function main() {
 
   console.log(`\nExtraction complete. Total upserted: ${totalUpserted}`)
   await disconnect()
+  process.exit(0)
 }
 
 main().catch((error) => {
