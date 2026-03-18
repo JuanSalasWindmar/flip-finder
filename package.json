@@ -20,6 +20,7 @@
   },
   "author": "Juan Salas",
   "license": "ISC",
+  "packageManager": "pnpm@10.23.0",
   "bugs": {
     "url": "https://github.com/JuanCamiloSalas/flip-finder/issues"
   },
