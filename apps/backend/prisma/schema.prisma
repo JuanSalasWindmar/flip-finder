@@ -1,0 +1,65 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+enum PropertyState {
+  ORIGINAL
+  REMODELED
+}
+
+enum PolygonType {
+  EXTRACT
+  ANALYZE
+}
+
+model Property {
+  id             String        @id @default(uuid())
+  link           String
+  state          PropertyState
+  area           Decimal       @db.Decimal(10, 2)
+  price          Int
+  age            String
+  admin_price    Int
+  price_per_sqm  Decimal       @db.Decimal(12, 2)
+  address        String
+  neighborhood   String
+  rooms          Int
+  bathrooms      Int
+  floor          Int
+  elevator       Boolean       @default(false)
+  stratum        Int           @db.SmallInt
+  parking        Boolean       @default(false)
+  notes          String?       @db.Text
+  latitude       Decimal?      @db.Decimal(10, 7)
+  longitude      Decimal?      @db.Decimal(10, 7)
+  reviewed       Boolean       @default(false)
+  created_at     DateTime      @default(now()) @db.Timestamptz
+  extracted_at   DateTime      @db.Timestamptz
+
+  duplicated_of_id String?
+  duplicated_of    Property?  @relation("DuplicateGroup", fields: [duplicated_of_id], references: [id])
+  duplicates       Property[] @relation("DuplicateGroup")
+
+  @@map("properties")
+}
+
+model Polygon {
+  id           String                          @id @default(uuid())
+  name         String
+  georeference Unsupported("geometry(Polygon, 4326)")
+  city         String
+  polygon_type PolygonType
+  enabled      Boolean                         @default(true)
+  params       Json?
+  created_at   DateTime                        @default(now()) @db.Timestamptz
+  updated_at   DateTime                        @updatedAt @db.Timestamptz
+
+  @@map("polygons")
+}
