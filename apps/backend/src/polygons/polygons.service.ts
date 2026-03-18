@@ -16,7 +16,8 @@ const FILTER_COLUMNS = [
   "max_area",
   "min_parking",
   "max_parking",
-  "stratum",
+  "min_stratum",
+  "max_stratum",
   "min_age",
   "max_age",
 ] as const
@@ -36,7 +37,7 @@ const SELECT_COLUMNS = `
   min_bathrooms, max_bathrooms,
   min_area, max_area,
   min_parking, max_parking,
-  stratum, min_age, max_age,
+  min_stratum, max_stratum, min_age, max_age,
   created_at, updated_at
 `
 
@@ -59,7 +60,8 @@ interface PolygonRow {
   max_area: number | null
   min_parking: number | null
   max_parking: number | null
-  stratum: number | null
+  min_stratum: number | null
+  max_stratum: number | null
   min_age: number | null
   max_age: number | null
   created_at: Date

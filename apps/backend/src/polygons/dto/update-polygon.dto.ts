@@ -58,8 +58,11 @@ export class UpdatePolygonDto {
   @ApiPropertyOptional()
   max_parking?: number | null
 
-  @ApiPropertyOptional({ description: "Estrato (1-6)" })
-  stratum?: number | null
+  @ApiPropertyOptional({ description: "Estrato mínimo (1-6)" })
+  min_stratum?: number | null
+
+  @ApiPropertyOptional({ description: "Estrato máximo (1-6)" })
+  max_stratum?: number | null
 
   @ApiPropertyOptional()
   min_age?: number | null

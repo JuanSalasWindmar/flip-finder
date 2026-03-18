@@ -85,7 +85,8 @@ model Polygon {
   max_area        Int?
   min_parking     Int?                            @db.SmallInt
   max_parking     Int?                            @db.SmallInt
-  stratum         Int?                            @db.SmallInt
+  min_stratum     Int?                            @db.SmallInt
+  max_stratum     Int?                            @db.SmallInt
   min_age         Int?                            @db.SmallInt
   max_age         Int?                            @db.SmallInt
   created_at      DateTime                        @default(now()) @db.Timestamptz

@@ -64,8 +64,11 @@ export class CreatePolygonDto {
   @ApiPropertyOptional({ example: 2 })
   max_parking?: number
 
-  @ApiPropertyOptional({ example: 3, description: "Estrato (1-6)" })
-  stratum?: number
+  @ApiPropertyOptional({ example: 3, description: "Estrato mínimo (1-6)" })
+  min_stratum?: number
+
+  @ApiPropertyOptional({ example: 5, description: "Estrato máximo (1-6)" })
+  max_stratum?: number
 
   @ApiPropertyOptional({ example: 0 })
   min_age?: number
