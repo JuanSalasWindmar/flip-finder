@@ -11,11 +11,30 @@ export async function getExtractPolygons(): Promise<ExtractPolygon[]> {
       georeference: string
       city: string
       enabled: boolean
-      params: Record<string, unknown> | null
+      property_type: string | null
+      property_status: string | null
+      min_price: number | null
+      max_price: number | null
+      min_bedrooms: number | null
+      max_bedrooms: number | null
+      min_bathrooms: number | null
+      max_bathrooms: number | null
+      min_area: number | null
+      max_area: number | null
+      min_parking: number | null
+      max_parking: number | null
+      min_stratum: number | null
+      max_stratum: number | null
+      min_age: number | null
+      max_age: number | null
     }[]
   >`
     SELECT id, name, ST_AsGeoJSON(georeference)::text AS georeference,
-           city, enabled, params
+           city, enabled, property_type, property_status,
+           min_price, max_price, min_bedrooms, max_bedrooms,
+           min_bathrooms, max_bathrooms, min_area, max_area,
+           min_parking, max_parking, min_stratum, max_stratum,
+           min_age, max_age
     FROM polygons
     WHERE polygon_type = 'EXTRACT' AND enabled = true
   `
@@ -23,7 +42,6 @@ export async function getExtractPolygons(): Promise<ExtractPolygon[]> {
   return rows.map((row) => ({
     ...row,
     georeference: JSON.parse(row.georeference),
-    params: row.params as ExtractPolygon["params"],
   }))
 }
 

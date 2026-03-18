@@ -7,14 +7,45 @@ import {
 } from "./db.js"
 import { metroCuadradoClient } from "./platforms/metro-cuadrado/client.js"
 import { fincaRaizClient } from "./platforms/finca-raiz/client.js"
-import type { PlatformClient, ExtractParams, RawProperty } from "./types.js"
+import type { PlatformClient, ExtractPolygon, ExtractParams, RawProperty } from "./types.js"
 
 const platforms: PlatformClient[] = [metroCuadradoClient, fincaRaizClient]
 
-const DEFAULT_PARAMS: ExtractParams = {
-  propertyType: "apartment",
-  businessType: "sale",
-  status: "used",
+const PROPERTY_TYPE_MAP: Record<string, ExtractParams["propertyType"]> = {
+  APARTMENT: "apartment",
+  STUDIO: "apartment",
+  HOUSE: "house",
+}
+
+const PROPERTY_STATUS_MAP: Record<string, ExtractParams["status"]> = {
+  NEW: "new",
+  USED: "used",
+}
+
+function buildRange(min: number | null, max: number | null): [number, number] | undefined {
+  if (min === null && max === null) return undefined
+  return [min ?? 0, max ?? 999999999]
+}
+
+function buildIntArray(min: number | null, max: number | null): number[] | undefined {
+  if (min === null && max === null) return undefined
+  const lo = min ?? 0
+  const hi = max ?? 10
+  return Array.from({ length: hi - lo + 1 }, (_, i) => lo + i)
+}
+
+function buildParams(polygon: ExtractPolygon): ExtractParams {
+  return {
+    propertyType: (polygon.property_type ? PROPERTY_TYPE_MAP[polygon.property_type] : undefined) ?? "apartment",
+    businessType: "sale",
+    status: (polygon.property_status ? PROPERTY_STATUS_MAP[polygon.property_status] : undefined) ?? "used",
+    priceRange: buildRange(polygon.min_price, polygon.max_price),
+    areaRange: buildRange(polygon.min_area, polygon.max_area),
+    rooms: buildIntArray(polygon.min_bedrooms, polygon.max_bedrooms),
+    bathrooms: buildIntArray(polygon.min_bathrooms, polygon.max_bathrooms),
+    parking: buildIntArray(polygon.min_parking, polygon.max_parking),
+    stratum: buildIntArray(polygon.min_stratum, polygon.max_stratum),
+  }
 }
 
 async function main() {
@@ -42,7 +73,7 @@ async function main() {
       console.log("  First extraction for this polygon")
     }
 
-    const params: ExtractParams = polygon.params ?? DEFAULT_PARAMS
+    const params: ExtractParams = buildParams(polygon)
 
     const allProperties: RawProperty[] = []
     let hasFailed = false
