@@ -38,6 +38,6 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Verify database connection
-        run: npx prisma db execute --stdin <<< "SELECT 1 AS connected;"
+        run: npx prisma db execute --schema=prisma/schema.prisma --stdin <<< "SELECT 1 AS connected;"
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
