@@ -69,22 +69,39 @@ export async function upsertProperties(
     extracted_at: Date
   }[],
 ): Promise<number> {
+  const BATCH_SIZE = 500
   let upserted = 0
 
-  for (const p of properties) {
-    await prisma.$executeRaw`
+  for (let i = 0; i < properties.length; i += BATCH_SIZE) {
+    const batch = properties.slice(i, i + BATCH_SIZE)
+
+    const values: unknown[] = []
+    const rows: string[] = []
+
+    for (const p of batch) {
+      const offset = values.length
+      values.push(
+        p.id, p.link, p.state, p.area, p.price, p.age,
+        p.admin_price, p.price_per_sqm, p.address, p.neighborhood,
+        p.rooms, p.bathrooms, p.floor, p.elevator, p.stratum,
+        p.parking, p.notes, p.latitude, p.longitude, p.extracted_at,
+      )
+      rows.push(`(
+        $${offset + 1}, $${offset + 2}, $${offset + 3}::"PropertyState",
+        $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8},
+        $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12},
+        $${offset + 13}, $${offset + 14}, $${offset + 15}, $${offset + 16},
+        $${offset + 17}, $${offset + 18}, $${offset + 19},
+        false, NOW(), $${offset + 20}
+      )`)
+    }
+
+    const query = `
       INSERT INTO properties (
         id, link, state, area, price, age, admin_price, price_per_sqm,
         address, neighborhood, rooms, bathrooms, floor, elevator,
         stratum, parking, notes, latitude, longitude, reviewed, created_at, extracted_at
-      ) VALUES (
-        ${p.id}, ${p.link}, ${p.state}::"PropertyState",
-        ${p.area}, ${p.price}, ${p.age}, ${p.admin_price}, ${p.price_per_sqm},
-        ${p.address}, ${p.neighborhood}, ${p.rooms}, ${p.bathrooms},
-        ${p.floor}, ${p.elevator}, ${p.stratum}, ${p.parking},
-        ${p.notes}, ${p.latitude}, ${p.longitude},
-        false, NOW(), ${p.extracted_at}
-      )
+      ) VALUES ${rows.join(", ")}
       ON CONFLICT (id) DO UPDATE SET
         link = EXCLUDED.link,
         state = EXCLUDED.state,
@@ -106,7 +123,10 @@ export async function upsertProperties(
         longitude = EXCLUDED.longitude,
         extracted_at = EXCLUDED.extracted_at
     `
-    upserted++
+
+    await prisma.$executeRawUnsafe(query, ...values)
+    upserted += batch.length
+    console.log(`  Upserted batch ${Math.floor(i / BATCH_SIZE) + 1}: ${upserted}/${properties.length}`)
   }
 
   return upserted
