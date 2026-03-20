@@ -66,6 +66,7 @@ export async function upsertProperties(
     notes: string | null
     latitude: number | null
     longitude: number | null
+    avg_age: number | null
     extracted_at: Date
   }[],
 ): Promise<number> {
@@ -84,15 +85,15 @@ export async function upsertProperties(
         p.id, p.link, p.state, p.area, p.price, p.age,
         p.admin_price, p.price_per_sqm, p.address, p.neighborhood,
         p.rooms, p.bathrooms, p.floor, p.elevator, p.stratum,
-        p.parking, p.notes, p.latitude, p.longitude, p.extracted_at,
+        p.parking, p.notes, p.latitude, p.longitude, p.avg_age, p.extracted_at,
       )
       rows.push(`(
         $${offset + 1}, $${offset + 2}, $${offset + 3}::"PropertyState",
         $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8},
         $${offset + 9}, $${offset + 10}, $${offset + 11}, $${offset + 12},
         $${offset + 13}, $${offset + 14}, $${offset + 15}, $${offset + 16},
-        $${offset + 17}, $${offset + 18}, $${offset + 19},
-        false, NOW(), $${offset + 20}
+        $${offset + 17}, $${offset + 18}, $${offset + 19}, $${offset + 20},
+        false, NOW(), $${offset + 21}
       )`)
     }
 
@@ -100,7 +101,8 @@ export async function upsertProperties(
       INSERT INTO properties (
         id, link, state, area, price, age, admin_price, price_per_sqm,
         address, neighborhood, rooms, bathrooms, floor, elevator,
-        stratum, parking, notes, latitude, longitude, reviewed, created_at, extracted_at
+        stratum, parking, notes, latitude, longitude, avg_age,
+        reviewed, created_at, extracted_at
       ) VALUES ${rows.join(", ")}
       ON CONFLICT (id) DO UPDATE SET
         link = EXCLUDED.link,
@@ -121,6 +123,7 @@ export async function upsertProperties(
         notes = EXCLUDED.notes,
         latitude = EXCLUDED.latitude,
         longitude = EXCLUDED.longitude,
+        avg_age = EXCLUDED.avg_age,
         extracted_at = EXCLUDED.extracted_at
     `
 
@@ -204,6 +207,8 @@ export async function getFilteredProperties(polygon: AnalyzePolygon): Promise<Ca
   if (polygon.min_parking !== null) { values.push(polygon.min_parking ? true : false); conditions.push(`p.parking = $${values.length}`) }
   if (polygon.min_stratum !== null) { values.push(polygon.min_stratum); conditions.push(`p.stratum >= $${values.length}`) }
   if (polygon.max_stratum !== null) { values.push(polygon.max_stratum); conditions.push(`p.stratum <= $${values.length}`) }
+  if (polygon.min_age !== null) { values.push(polygon.min_age); conditions.push(`p.avg_age >= $${values.length}`) }
+  if (polygon.max_age !== null) { values.push(polygon.max_age); conditions.push(`p.avg_age <= $${values.length}`) }
 
   const query = `
     SELECT p.id, p.link, p.price_per_sqm::float, p.price::float, p.area::float, p.address, p.neighborhood
@@ -235,6 +240,8 @@ export async function getMedianPricePerSqm(polygon: AnalyzePolygon): Promise<num
   if (polygon.max_area !== null) { values.push(polygon.max_area); conditions.push(`p.area <= $${values.length}`) }
   if (polygon.min_stratum !== null) { values.push(polygon.min_stratum); conditions.push(`p.stratum >= $${values.length}`) }
   if (polygon.max_stratum !== null) { values.push(polygon.max_stratum); conditions.push(`p.stratum <= $${values.length}`) }
+  if (polygon.min_age !== null) { values.push(polygon.min_age); conditions.push(`p.avg_age >= $${values.length}`) }
+  if (polygon.max_age !== null) { values.push(polygon.max_age); conditions.push(`p.avg_age <= $${values.length}`) }
 
   const query = `
     SELECT PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY p.price_per_sqm::float) AS median

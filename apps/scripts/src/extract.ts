@@ -34,6 +34,22 @@ function buildIntArray(min: number | null, max: number | null): number[] | undef
   return Array.from({ length: hi - lo + 1 }, (_, i) => lo + i)
 }
 
+const AGE_MAP: Record<string, number> = {
+  "menor a 1 año": 0,
+  "Entre 0 y 5 años": 3,
+  "1 a 8 años": 5,
+  "Entre 5 y 10 años": 8,
+  "9 a 15 años": 12,
+  "Entre 10 y 20 años": 15,
+  "16 a 30 años": 23,
+  "Más de 20 años": 23,
+  "más de 30 años": 35,
+}
+
+function parseAvgAge(age: string): number | null {
+  return AGE_MAP[age] ?? null
+}
+
 function buildParams(polygon: ExtractPolygon): ExtractParams {
   return {
     propertyType: (polygon.property_type ? PROPERTY_TYPE_MAP[polygon.property_type] : undefined) ?? "apartment",
@@ -103,6 +119,7 @@ async function main() {
 
     const withTimestamp = validProperties.map((p) => ({
       ...p,
+      avg_age: parseAvgAge(p.age),
       extracted_at: performedAt,
     }))
 
