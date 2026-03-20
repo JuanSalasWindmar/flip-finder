@@ -58,11 +58,8 @@ export class CreatePolygonDto {
   @ApiPropertyOptional({ example: 200 })
   max_area?: number
 
-  @ApiPropertyOptional({ example: 0 })
-  min_parking?: number
-
-  @ApiPropertyOptional({ example: 2 })
-  max_parking?: number
+  @ApiPropertyOptional({ description: "Filter by parking availability" })
+  parking?: boolean
 
   @ApiPropertyOptional({ example: 3, description: "Estrato mínimo (1-6)" })
   min_stratum?: number

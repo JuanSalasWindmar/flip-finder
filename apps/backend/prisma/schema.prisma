@@ -86,8 +86,7 @@ model Polygon {
   max_bathrooms   Int?                            @db.SmallInt
   min_area        Int?
   max_area        Int?
-  min_parking     Int?                            @db.SmallInt
-  max_parking     Int?                            @db.SmallInt
+  parking         Boolean?
   min_stratum     Int?                            @db.SmallInt
   max_stratum     Int?                            @db.SmallInt
   min_age              Int?                            @db.SmallInt

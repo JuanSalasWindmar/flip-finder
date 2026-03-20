@@ -19,8 +19,7 @@ export interface ExtractPolygon {
   max_bathrooms: number | null
   min_area: number | null
   max_area: number | null
-  min_parking: number | null
-  max_parking: number | null
+  parking: boolean | null
   min_stratum: number | null
   max_stratum: number | null
   min_age: number | null
@@ -41,8 +40,7 @@ export interface AnalyzePolygon {
   max_bathrooms: number | null
   min_area: number | null
   max_area: number | null
-  min_parking: number | null
-  max_parking: number | null
+  parking: boolean | null
   min_stratum: number | null
   max_stratum: number | null
   min_age: number | null

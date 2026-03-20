@@ -21,8 +21,7 @@ export async function getExtractPolygons(): Promise<ExtractPolygon[]> {
       max_bathrooms: number | null
       min_area: number | null
       max_area: number | null
-      min_parking: number | null
-      max_parking: number | null
+      parking: boolean | null
       min_stratum: number | null
       max_stratum: number | null
       min_age: number | null
@@ -33,7 +32,7 @@ export async function getExtractPolygons(): Promise<ExtractPolygon[]> {
            city, enabled, property_type, property_status,
            min_price, max_price, min_bedrooms, max_bedrooms,
            min_bathrooms, max_bathrooms, min_area, max_area,
-           min_parking, max_parking, min_stratum, max_stratum,
+           parking, min_stratum, max_stratum,
            min_age, max_age
     FROM polygons
     WHERE polygon_type = 'EXTRACT' AND enabled = true
@@ -151,8 +150,7 @@ export async function getAnalyzePolygons(): Promise<AnalyzePolygon[]> {
       max_bathrooms: number | null
       min_area: number | null
       max_area: number | null
-      min_parking: number | null
-      max_parking: number | null
+      parking: boolean | null
       min_stratum: number | null
       max_stratum: number | null
       min_age: number | null
@@ -163,7 +161,7 @@ export async function getAnalyzePolygons(): Promise<AnalyzePolygon[]> {
            city, deviation_threshold,
            min_price, max_price, min_bedrooms, max_bedrooms,
            min_bathrooms, max_bathrooms, min_area, max_area,
-           min_parking, max_parking, min_stratum, max_stratum,
+           parking, min_stratum, max_stratum,
            min_age, max_age
     FROM polygons
     WHERE polygon_type = 'ANALYZE' AND enabled = true AND deviation_threshold IS NOT NULL
@@ -204,7 +202,7 @@ export async function getFilteredProperties(polygon: AnalyzePolygon): Promise<Ca
   if (polygon.max_bathrooms !== null) { values.push(polygon.max_bathrooms); conditions.push(`p.bathrooms <= $${values.length}`) }
   if (polygon.min_area !== null) { values.push(polygon.min_area); conditions.push(`p.area >= $${values.length}`) }
   if (polygon.max_area !== null) { values.push(polygon.max_area); conditions.push(`p.area <= $${values.length}`) }
-  if (polygon.min_parking !== null) { values.push(polygon.min_parking ? true : false); conditions.push(`p.parking = $${values.length}`) }
+  if (polygon.parking !== null) { values.push(polygon.parking); conditions.push(`p.parking = $${values.length}`) }
   if (polygon.min_stratum !== null) { values.push(polygon.min_stratum); conditions.push(`p.stratum >= $${values.length}`) }
   if (polygon.max_stratum !== null) { values.push(polygon.max_stratum); conditions.push(`p.stratum <= $${values.length}`) }
   if (polygon.min_age !== null) { values.push(polygon.min_age); conditions.push(`p.avg_age >= $${values.length}`) }
@@ -238,6 +236,7 @@ export async function getMedianPricePerSqm(polygon: AnalyzePolygon): Promise<num
   if (polygon.max_bathrooms !== null) { values.push(polygon.max_bathrooms); conditions.push(`p.bathrooms <= $${values.length}`) }
   if (polygon.min_area !== null) { values.push(polygon.min_area); conditions.push(`p.area >= $${values.length}`) }
   if (polygon.max_area !== null) { values.push(polygon.max_area); conditions.push(`p.area <= $${values.length}`) }
+  if (polygon.parking !== null) { values.push(polygon.parking); conditions.push(`p.parking = $${values.length}`) }
   if (polygon.min_stratum !== null) { values.push(polygon.min_stratum); conditions.push(`p.stratum >= $${values.length}`) }
   if (polygon.max_stratum !== null) { values.push(polygon.max_stratum); conditions.push(`p.stratum <= $${values.length}`) }
   if (polygon.min_age !== null) { values.push(polygon.min_age); conditions.push(`p.avg_age >= $${values.length}`) }

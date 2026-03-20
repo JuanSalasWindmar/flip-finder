@@ -14,8 +14,7 @@ const FILTER_COLUMNS = [
   "max_bathrooms",
   "min_area",
   "max_area",
-  "min_parking",
-  "max_parking",
+  "parking",
   "min_stratum",
   "max_stratum",
   "min_age",
@@ -37,7 +36,7 @@ const SELECT_COLUMNS = `
   min_bedrooms, max_bedrooms,
   min_bathrooms, max_bathrooms,
   min_area, max_area,
-  min_parking, max_parking,
+  parking,
   min_stratum, max_stratum, min_age, max_age,
   deviation_threshold, created_at, updated_at
 `
@@ -59,8 +58,7 @@ interface PolygonRow {
   max_bathrooms: number | null
   min_area: number | null
   max_area: number | null
-  min_parking: number | null
-  max_parking: number | null
+  parking: boolean | null
   min_stratum: number | null
   max_stratum: number | null
   min_age: number | null

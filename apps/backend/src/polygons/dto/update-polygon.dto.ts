@@ -52,11 +52,8 @@ export class UpdatePolygonDto {
   @ApiPropertyOptional()
   max_area?: number | null
 
-  @ApiPropertyOptional()
-  min_parking?: number | null
-
-  @ApiPropertyOptional()
-  max_parking?: number | null
+  @ApiPropertyOptional({ description: "Filter by parking availability" })
+  parking?: boolean | null
 
   @ApiPropertyOptional({ description: "Estrato mínimo (1-6)" })
   min_stratum?: number | null

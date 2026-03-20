@@ -59,7 +59,7 @@ function buildParams(polygon: ExtractPolygon): ExtractParams {
     areaRange: buildRange(polygon.min_area, polygon.max_area),
     rooms: buildIntArray(polygon.min_bedrooms, polygon.max_bedrooms),
     bathrooms: buildIntArray(polygon.min_bathrooms, polygon.max_bathrooms),
-    parking: buildIntArray(polygon.min_parking, polygon.max_parking),
+    parking: polygon.parking ? [1, 2, 3, 4, 5] : undefined,
     stratum: buildIntArray(polygon.min_stratum, polygon.max_stratum),
   }
 }
