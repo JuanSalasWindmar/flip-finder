@@ -59,6 +59,17 @@ interface PropertyRow {
   extracted_at: Date
 }
 
+interface PropertyFilters {
+  polygonId?: string
+  minArea?: string
+  maxArea?: string
+  state?: string
+  floor?: string
+  reviewed?: string
+  avgAge?: string
+  duplicatedOf?: string
+}
+
 @Injectable()
 export class PropertiesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -112,13 +123,13 @@ export class PropertiesService {
     return this.formatRow(rows[0])
   }
 
-  async findAll(polygonId?: string) {
-    const rows = await this.queryProperties(polygonId)
+  async findAll(filters?: PropertyFilters) {
+    const rows = await this.queryProperties(filters)
     return rows.map((row) => this.formatRow(row))
   }
 
-  async findAllCsv(polygonId?: string): Promise<string> {
-    const rows = await this.queryProperties(polygonId)
+  async findAllCsv(filters?: PropertyFilters): Promise<string> {
+    const rows = await this.queryProperties(filters)
 
     const headers = [
       "id", "link", "state", "area", "price", "age", "avg_age",
@@ -301,23 +312,80 @@ export class PropertiesService {
     return { deleted: true }
   }
 
-  private async queryProperties(polygonId?: string): Promise<PropertyRow[]> {
-    if (polygonId) {
-      return this.prisma.$queryRawUnsafe<PropertyRow[]>(
-        `SELECT p.* FROM properties p
-         WHERE p.latitude IS NOT NULL AND p.longitude IS NOT NULL
-           AND ST_Contains(
-             (SELECT georeference FROM polygons WHERE id = $1),
-             ST_SetSRID(ST_MakePoint(p.longitude, p.latitude), 4326)
-           )
-         ORDER BY p.created_at DESC`,
-        polygonId,
-      )
+  private async queryProperties(filters?: PropertyFilters): Promise<PropertyRow[]> {
+    const conditions: string[] = []
+    const values: unknown[] = []
+
+    if (filters?.polygonId) {
+      values.push(filters.polygonId)
+      conditions.push(`p.latitude IS NOT NULL AND p.longitude IS NOT NULL AND ST_Contains(
+        (SELECT georeference FROM polygons WHERE id = $${values.length}),
+        ST_SetSRID(ST_MakePoint(p.longitude, p.latitude), 4326)
+      )`)
     }
 
-    return this.prisma.$queryRawUnsafe<PropertyRow[]>(
-      `SELECT * FROM properties ORDER BY created_at DESC`,
-    )
+    if (filters?.minArea) {
+      if (filters.minArea === "null") {
+        conditions.push(`p.area IS NULL`)
+      } else {
+        values.push(Number(filters.minArea))
+        conditions.push(`p.area >= $${values.length}`)
+      }
+    }
+
+    if (filters?.maxArea) {
+      if (filters.maxArea === "null") {
+        conditions.push(`p.area IS NULL`)
+      } else {
+        values.push(Number(filters.maxArea))
+        conditions.push(`p.area <= $${values.length}`)
+      }
+    }
+
+    if (filters?.state) {
+      if (filters.state === "null") {
+        conditions.push(`p.state IS NULL`)
+      } else {
+        values.push(filters.state)
+        conditions.push(`p.state = $${values.length}::"PropertyState"`)
+      }
+    }
+
+    if (filters?.floor) {
+      if (filters.floor === "null") {
+        conditions.push(`(p.floor IS NULL OR p.floor = 0)`)
+      } else {
+        values.push(Number(filters.floor))
+        conditions.push(`p.floor = $${values.length}`)
+      }
+    }
+
+    if (filters?.reviewed) {
+      values.push(filters.reviewed === "true")
+      conditions.push(`p.reviewed = $${values.length}`)
+    }
+
+    if (filters?.avgAge) {
+      if (filters.avgAge === "null") {
+        conditions.push(`p.avg_age IS NULL`)
+      } else {
+        values.push(Number(filters.avgAge))
+        conditions.push(`p.avg_age = $${values.length}`)
+      }
+    }
+
+    if (filters?.duplicatedOf) {
+      if (filters.duplicatedOf === "null") {
+        conditions.push(`p.duplicated_of_id IS NULL`)
+      } else if (filters.duplicatedOf === "has") {
+        conditions.push(`p.duplicated_of_id IS NOT NULL`)
+      }
+    }
+
+    const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
+    const query = `SELECT p.* FROM properties p ${where} ORDER BY p.created_at DESC`
+
+    return this.prisma.$queryRawUnsafe<PropertyRow[]>(query, ...values)
   }
 
   private formatRow(row: PropertyRow) {
