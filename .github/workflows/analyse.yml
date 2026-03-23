@@ -1,0 +1,31 @@
+name: Analyse Properties
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 16 * * 1-6" # Mon-Sat at 16:30 UTC (11:30 COT)
+
+jobs:
+  analyse:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @flip-finder/scripts prisma:generate
+
+      - name: Run analysis
+        run: pnpm --filter @flip-finder/scripts analyse
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
