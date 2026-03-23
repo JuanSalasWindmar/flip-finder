@@ -117,6 +117,7 @@ model PotentialProperty {
 enum ExecutionStatus {
   SUCCESS
   FAILED
+  SKIPPED
 }
 
 model Execution {

@@ -1,5 +1,6 @@
 import {
   getAnalyzePolygons,
+  countReviewedProperties,
   getFilteredProperties,
   getMedianPricePerSqm,
   upsertPotentialProperties,
@@ -26,6 +27,24 @@ async function main() {
     console.log(`\nAnalyzing polygon: ${polygon.name} (${polygon.city})`)
     console.log(`  Deviation threshold: -${polygon.deviation_threshold}%`)
 
+    // Validate minimum sample size of reviewed properties
+    const MIN_REVIEWED = 15
+    const reviewedCount = await countReviewedProperties(polygon)
+    console.log(`  Reviewed properties: ${reviewedCount}`)
+
+    if (reviewedCount < MIN_REVIEWED) {
+      console.log(`  Insufficient reviewed properties (${reviewedCount}/${MIN_REVIEWED}). Skipping.`)
+      await createExecution({
+        polygonId: polygon.id,
+        type: "ANALYZE",
+        status: "SKIPPED",
+        propertiesFound: 0,
+        propertiesNew: 0,
+        performedAt,
+      })
+      continue
+    }
+
     // Step 3.1: Compute median price/m2 from reviewed properties
     const median = await getMedianPricePerSqm(polygon)
 
@@ -34,7 +53,7 @@ async function main() {
       await createExecution({
         polygonId: polygon.id,
         type: "ANALYZE",
-        status: "FAILED",
+        status: "SKIPPED",
         propertiesFound: 0,
         propertiesNew: 0,
         performedAt,

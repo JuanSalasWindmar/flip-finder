@@ -218,6 +218,41 @@ export async function getFilteredProperties(polygon: AnalyzePolygon): Promise<Ca
   return prisma.$queryRawUnsafe<CandidateProperty[]>(query, ...values)
 }
 
+export async function countReviewedProperties(polygon: AnalyzePolygon): Promise<number> {
+  const conditions: string[] = ["p.duplicated_of_id IS NULL", "p.reviewed = true"]
+  const values: unknown[] = []
+
+  values.push(polygon.id)
+  conditions.push(`ST_Contains(
+    (SELECT georeference FROM polygons WHERE id = $${values.length}),
+    ST_SetSRID(ST_MakePoint(p.longitude, p.latitude), 4326)
+  )`)
+
+  if (polygon.min_price !== null) { values.push(polygon.min_price); conditions.push(`p.price >= $${values.length}`) }
+  if (polygon.max_price !== null) { values.push(polygon.max_price); conditions.push(`p.price <= $${values.length}`) }
+  if (polygon.min_bedrooms !== null) { values.push(polygon.min_bedrooms); conditions.push(`p.rooms >= $${values.length}`) }
+  if (polygon.max_bedrooms !== null) { values.push(polygon.max_bedrooms); conditions.push(`p.rooms <= $${values.length}`) }
+  if (polygon.min_bathrooms !== null) { values.push(polygon.min_bathrooms); conditions.push(`p.bathrooms >= $${values.length}`) }
+  if (polygon.max_bathrooms !== null) { values.push(polygon.max_bathrooms); conditions.push(`p.bathrooms <= $${values.length}`) }
+  if (polygon.min_area !== null) { values.push(polygon.min_area); conditions.push(`p.area >= $${values.length}`) }
+  if (polygon.max_area !== null) { values.push(polygon.max_area); conditions.push(`p.area <= $${values.length}`) }
+  if (polygon.parking !== null) { values.push(polygon.parking); conditions.push(`p.parking = $${values.length}`) }
+  if (polygon.min_stratum !== null) { values.push(polygon.min_stratum); conditions.push(`p.stratum >= $${values.length}`) }
+  if (polygon.max_stratum !== null) { values.push(polygon.max_stratum); conditions.push(`p.stratum <= $${values.length}`) }
+  if (polygon.min_age !== null) { values.push(polygon.min_age); conditions.push(`p.avg_age >= $${values.length}`) }
+  if (polygon.max_age !== null) { values.push(polygon.max_age); conditions.push(`p.avg_age <= $${values.length}`) }
+
+  const query = `
+    SELECT COUNT(*)::int AS count
+    FROM properties p
+    WHERE ${conditions.join(" AND ")}
+      AND p.latitude IS NOT NULL AND p.longitude IS NOT NULL
+  `
+
+  const rows = await prisma.$queryRawUnsafe<{ count: number }[]>(query, ...values)
+  return rows[0]?.count ?? 0
+}
+
 export async function getMedianPricePerSqm(polygon: AnalyzePolygon): Promise<number | null> {
   const conditions: string[] = ["p.duplicated_of_id IS NULL", "p.reviewed = true"]
   const values: unknown[] = []
@@ -302,7 +337,7 @@ export async function getLastExecution(
 export async function createExecution(execution: {
   polygonId: string
   type: "EXTRACT" | "ANALYZE"
-  status: "SUCCESS" | "FAILED"
+  status: "SUCCESS" | "FAILED" | "SKIPPED"
   propertiesFound: number
   propertiesNew: number
   performedAt: Date
