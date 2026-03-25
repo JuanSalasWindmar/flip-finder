@@ -124,6 +124,7 @@ export async function upsertProperties(
         longitude = EXCLUDED.longitude,
         avg_age = EXCLUDED.avg_age,
         extracted_at = EXCLUDED.extracted_at
+      WHERE properties.reviewed = false
     `
 
     await prisma.$executeRawUnsafe(query, ...values)
