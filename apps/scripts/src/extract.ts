@@ -114,8 +114,13 @@ async function main() {
       }
     }
 
-    // Filter out properties with missing IDs
-    const validProperties = allProperties.filter((p) => p.id !== "")
+    // Filter out properties with missing IDs and deduplicate by ID
+    const seen = new Set<string>()
+    const validProperties = allProperties.filter((p) => {
+      if (p.id === "" || seen.has(p.id)) return false
+      seen.add(p.id)
+      return true
+    })
 
     const withTimestamp = validProperties.map((p) => ({
       ...p,
