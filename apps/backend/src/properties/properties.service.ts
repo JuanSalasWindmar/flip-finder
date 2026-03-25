@@ -318,10 +318,44 @@ export class PropertiesService {
 
     if (filters?.polygonId) {
       values.push(filters.polygonId)
+      const pidx = values.length
+
+      // Spatial filter
       conditions.push(`p.latitude IS NOT NULL AND p.longitude IS NOT NULL AND ST_Contains(
-        (SELECT georeference FROM polygons WHERE id = $${values.length}),
+        (SELECT georeference FROM polygons WHERE id = $${pidx}),
         ST_SetSRID(ST_MakePoint(p.longitude, p.latitude), 4326)
       )`)
+
+      // Apply polygon's own filter criteria
+      const polygonRows = await this.prisma.$queryRawUnsafe<{
+        min_price: number | null; max_price: number | null
+        min_bedrooms: number | null; max_bedrooms: number | null
+        min_bathrooms: number | null; max_bathrooms: number | null
+        min_area: number | null; max_area: number | null
+        parking: boolean | null
+        min_stratum: number | null; max_stratum: number | null
+        min_age: number | null; max_age: number | null
+      }[]>(`SELECT min_price, max_price, min_bedrooms, max_bedrooms,
+              min_bathrooms, max_bathrooms, min_area, max_area, parking,
+              min_stratum, max_stratum, min_age, max_age
+            FROM polygons WHERE id = $1`, filters.polygonId)
+
+      if (polygonRows.length > 0) {
+        const pg = polygonRows[0]
+        if (pg.min_price !== null) { values.push(pg.min_price); conditions.push(`p.price >= $${values.length}`) }
+        if (pg.max_price !== null) { values.push(pg.max_price); conditions.push(`p.price <= $${values.length}`) }
+        if (pg.min_bedrooms !== null) { values.push(pg.min_bedrooms); conditions.push(`p.rooms >= $${values.length}`) }
+        if (pg.max_bedrooms !== null) { values.push(pg.max_bedrooms); conditions.push(`p.rooms <= $${values.length}`) }
+        if (pg.min_bathrooms !== null) { values.push(pg.min_bathrooms); conditions.push(`p.bathrooms >= $${values.length}`) }
+        if (pg.max_bathrooms !== null) { values.push(pg.max_bathrooms); conditions.push(`p.bathrooms <= $${values.length}`) }
+        if (pg.min_area !== null) { values.push(pg.min_area); conditions.push(`p.area >= $${values.length}`) }
+        if (pg.max_area !== null) { values.push(pg.max_area); conditions.push(`p.area <= $${values.length}`) }
+        if (pg.parking !== null) { values.push(pg.parking); conditions.push(`p.parking = $${values.length}`) }
+        if (pg.min_stratum !== null) { values.push(pg.min_stratum); conditions.push(`p.stratum >= $${values.length}`) }
+        if (pg.max_stratum !== null) { values.push(pg.max_stratum); conditions.push(`p.stratum <= $${values.length}`) }
+        if (pg.min_age !== null) { values.push(pg.min_age); conditions.push(`p.avg_age >= $${values.length}`) }
+        if (pg.max_age !== null) { values.push(pg.max_age); conditions.push(`p.avg_age <= $${values.length}`) }
+      }
     }
 
     if (filters?.minArea) {

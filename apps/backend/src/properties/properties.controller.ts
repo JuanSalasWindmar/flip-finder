@@ -38,7 +38,7 @@ export class PropertiesController {
     @Query("reviewed") reviewed: string,
     @Query("avg_age") avgAge: string,
     @Query("duplicated_of") duplicatedOf: string,
-    @Res({ passthrough: true }) res: Response,
+    @Res() res: Response,
   ) {
     const filters = { polygonId, minArea, maxArea, state, floor, reviewed, avgAge, duplicatedOf }
 
@@ -48,11 +48,11 @@ export class PropertiesController {
         "Content-Type": "text/csv",
         "Content-Disposition": "attachment; filename=properties.csv",
       })
-      res.send(csv)
-      return
+      return res.send(csv)
     }
 
-    return this.propertiesService.findAll(filters)
+    const data = await this.propertiesService.findAll(filters)
+    return res.json(data)
   }
 
   @Patch("bulk/update")
